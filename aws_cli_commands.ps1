@@ -1,0 +1,4 @@
+aws s3 ls | ForEach-Object { $bucketName = ($_ -split '\s+')[-1]; Write-Host "Emptying bucket: $bucketName"; aws s3 rm s3://$bucketName --recursive }
+
+# delete all object versions from versioned buckets
+$buckets = @("cdk-hnb659fds-assets-235391889461-us-east-1", "com.varunmuriyanat.accesslayer", "com.varunmuriyanat.businessvault", "com.varunmuriyanat.rawvault", "com.varunmuriyanat.s3-batch-operation", "com.varunmuriyanat.scripts"); foreach ($bucket in $buckets) { Write-Host "Removing all versions from bucket: $bucket"; aws s3api delete-objects --bucket $bucket --delete "$(aws s3api list-object-versions --bucket $bucket --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}' --output json)" --no-paginate 2>$null; aws s3api delete-objects --bucket $bucket --delete "$(aws s3api list-object-versions --bucket $bucket --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}' --output json)" --no-paginate 2>$null }
